@@ -34,7 +34,7 @@ update_version 'package.json' $next_version
 git commit -am "Version $next_version"
 
 # push first to make sure we're up-to-date
-git push origin master
+git push origin main
 
 git tag $next_ref
 git tag latest -f
@@ -45,4 +45,3 @@ git push origin latest -f
 node scripts/build.js
 
 npm publish
-
