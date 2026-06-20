@@ -26,7 +26,7 @@
     "build-es6": "rimraf es6 && babel ./modules --out-dir es6 --ignore '**/__tests__/**' --env-name esm",
     "build-umd": "rimraf umd && webpack --config webpack.config.js",
     "lint": "eslint modules webpack.config.js",
-    "test": "npm run lint && node --require @babel/register --require jsdom-global/register --test \"modules/__tests__/**/*-test.js\""
+    "test": "npm run lint && node --require @babel/register --require jsdom-global/register --test modules/__tests__/*-test.js"
   },
   "authors": [
     "Josh"
