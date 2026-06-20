@@ -1,38 +1,58 @@
-let webpack = require('webpack')
+const path = require('path')
 
-module.exports = {
-
+const baseConfig = {
+  mode: 'production',
+  entry: './modules/Title.js',
   output: {
-    library: 'reactjs-title',
-    libraryTarget: 'umd'
+    path: path.resolve(__dirname, 'umd'),
+    library: {
+      name: 'ReactTitle',
+      type: 'umd'
+    },
+    globalObject: 'this'
   },
 
-  externals: [
-    {
-      react: {
-        root: 'React',
-        commonjs2: 'react',
-        commonjs: 'react',
-        amd: 'react'
-      }
+  externals: {
+    react: {
+      root: 'React',
+      commonjs2: 'react',
+      commonjs: 'react',
+      amd: 'react'
+    },
+    'prop-types': {
+      root: 'PropTypes',
+      commonjs2: 'prop-types',
+      commonjs: 'prop-types',
+      amd: 'prop-types'
     }
-  ],
+  },
 
   module: {
-    loaders: [
-      { test: /\.js$/, exclude: /node_modules/, loader: 'babel' }
+    rules: [
+      { test: /\.js$/, exclude: /node_modules/, use: 'babel-loader' }
     ]
-  },
-
-  node: {
-    Buffer: false
-  },
-
-  plugins: [
-    new webpack.optimize.OccurenceOrderPlugin(),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
-    })
-  ]
-
+  }
 }
+
+module.exports = [
+  {
+    ...baseConfig,
+    output: {
+      ...baseConfig.output,
+      filename: 'ReactTitleComponent.js'
+    },
+    optimization: {
+      minimize: false
+    }
+  },
+  {
+    ...baseConfig,
+    output: {
+      ...baseConfig.output,
+      filename: 'ReactTitleComponent.min.js'
+    },
+    optimization: {
+      minimize: true
+    }
+  }
+]

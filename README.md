@@ -11,6 +11,9 @@ Using [npm](https://www.npmjs.com/):
 
     $ npm install reactjs-title
 
+`react` and `prop-types` are peer dependencies, so install them in your
+application if they are not already present.
+
 Then with a module bundler like [webpack](https://webpack.github.io/) that supports either CommonJS or ES2015 modules, use as you would anything else:
 
 ```js
@@ -30,6 +33,11 @@ The UMD build is also available on [unpkg](https://unpkg.com):
 ```
 
 You can find the library on `window.ReactTitle`.
+
+```js
+const Title = window.ReactTitle.default
+const flushTitle = window.ReactTitle.flushTitle
+```
 
 ### Usage
 
@@ -60,47 +68,32 @@ It ends up looking something like this:
 
 ```js
 import React from 'react'
-import { render } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import Title from 'reactjs-title'
 
-const App = React.createClass({
+function App() {
+  return (
+    <div>
+      <Title render="Awesome Website"/>
+      <DeeperPage/>
+      {/* ... */}
+    </div>
+  )
+}
 
-  render() {
-    return (
-      <div>
-        <Title render="Awesome Website"/>
-        <DeeperPage/>
-        {/* ... */}
-      </div>
-    )
-  }
+function DeeperPage({ profile }) {
+  // because it's a component, it gets to participate in the render
+  // lifecycle, updating the title as state changes...
+  const title = profile ? profile.fullName : 'Loading...'
+  return (
+    <div>
+      <Title render={parentTitle => `More Stuff | ${title}`}/>
+      {/* ... */}
+    </div>
+  )
+}
 
-})
-
-const DeeperPage = React.createClass({
-
-  getInitialState() {
-    return { profile: null }
-  },
-
-  componentDidMount() {
-    fetchProfile(profile => this.setState({ profile }))
-  },
-
-  render() {
-    // because it's a component, it gets to participate in the render
-    // lifecycle, updating the title as state changes...
-    const { profile } = this.state
-    const title = profile ? 'Loading...' : profile.fullName
-    return (
-      <div>
-        <Title render={parentTitle => `More Stuff | ${title}`}/>
-        {/* ... */}
-      </div>
-    )
-  }
-
-})
+createRoot(document.getElementById('root')).render(<App/>)
 ```
 
 If you're using React Router, you probably want all of your route
@@ -155,4 +148,3 @@ This could be worked around, but it seems like a strange use-case that
 would complicate the code a bit.
 
 Enjoy!
-

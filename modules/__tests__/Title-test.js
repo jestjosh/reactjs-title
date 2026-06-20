@@ -1,32 +1,48 @@
-import expect from 'expect'
 import React from 'react'
-import { render } from 'react-dom'
+import { act } from 'react'
+import { createRoot } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
+import { expect } from 'expect'
+import { afterEach, beforeEach, describe, it } from 'node:test'
 import Title, { flushTitle } from '../Title'
-import { findRenderedComponentWithType } from 'react-addons-test-utils'
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 describe('Title', () => {
+  let roots = []
+  let bInstance
 
   beforeEach(() => {
     flushTitle()
     document.title = ''
+    roots = []
+    bInstance = null
   })
 
-  const A = React.createClass({
+  afterEach(() => {
+    roots.forEach(root => {
+      act(() => {
+        root.unmount()
+      })
+    })
+    flushTitle()
+  })
+
+  class A extends React.Component {
     render() {
       return (
         <div>
           <Title render="A"/>
-          <B/>
+          <B ref={instance => { bInstance = instance }}/>
         </div>
       )
     }
-  })
+  }
 
-  const B = React.createClass({
-    getInitialState() {
-      return { title: 'B' }
-    },
+  class B extends React.Component {
+    state = {
+      title: 'B'
+    }
 
     render() {
       return (
@@ -36,9 +52,9 @@ describe('Title', () => {
         </div>
       )
     }
-  })
+  }
 
-  const C = React.createClass({
+  class C extends React.Component {
     render() {
       return (
         <div>
@@ -46,30 +62,38 @@ describe('Title', () => {
         </div>
       )
     }
-  })
+  }
 
-  it('renders the title', (done) => {
+  function renderApp(element) {
     const div = document.createElement('div')
-    render(<A/>, div, () => {
-      expect(document.title).toEqual('A | B | C')
-      done()
+    const root = createRoot(div)
+    roots.push(root)
+
+    act(() => {
+      root.render(element)
     })
+
+    return root
+  }
+
+  it('renders the title', () => {
+    renderApp(<A/>)
+    expect(document.title).toEqual('A | B | C')
   })
 
-  it('handles state changes in the middle of a chain', (done) => {
+  it('handles state changes in the middle of a chain', () => {
     // incidentally tests the previous and next instances
     // not getting screwed up too.
-    const div = document.createElement('div')
-    render(<A/>, div, function () {
-      expect(document.title).toEqual('A | B | C')
-      const b = findRenderedComponentWithType(this, B)
-      b.setState({
+    renderApp(<A/>)
+    expect(document.title).toEqual('A | B | C')
+
+    act(() => {
+      bInstance.setState({
         title: 'B Updated'
-      }, () => {
-        expect(document.title).toEqual('A | B Updated | C')
-        done()
       })
     })
+
+    expect(document.title).toEqual('A | B Updated | C')
   })
 
   describe('server rendering with flushTitle', () => {
